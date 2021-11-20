@@ -16,7 +16,7 @@ var data, long, lat, total_cases, realTime_cases, bar, bar_arr = [];
 
 var phi, theta;
 var X, Y, Z, pos_x, pos_y, pos_z;
-var tempV, label, label_arr = [];
+var tempV, raycaster, label, label_arr = [];
 
 //GET DATA
 function load_data() {
@@ -28,8 +28,6 @@ function load_data() {
     xhttp.onload = function() {
 
         data = JSON.parse(this.responseText);
-
-        console.log(data);
 
         for (var i = 0; i < data.length - 1; i++) {
 
@@ -64,6 +62,22 @@ function load_data() {
             label_arr.push(label);
             document.getElementById("world-label-container").appendChild(label);
 
+            //event listener for labels
+            label_arr[i].addEventListener("mousedown", function(e) {
+
+                var country_name = this.innerHTML;
+
+                data.forEach((country) => {
+
+                    console.log(country_name);
+
+                    if (country_name == country.country) {
+
+                        console.log(data.todayCases);
+                    }
+                });
+            });
+
             scene.add(bar);
         }
     }
@@ -79,7 +93,7 @@ function init() {
     scene = new THREE.Scene();
     
     camera = new THREE.PerspectiveCamera(FOV, window.innerWidth / window.innerHeight, NEAR, FAR);
-    camera.position.set(X_POS, Y_POS, Z_POS);
+    camera.position.set(X_POS, Y_POS, 10);
     camera.lookAt(new THREE.Vector3(0, 0 ,0));
 
     renderer = new THREE.WebGLRenderer({antialias: true});
@@ -137,6 +151,7 @@ function init() {
 }
 
 tempV = new THREE.Vector3();
+raycaster = new THREE.Raycaster();
 
 var render = function() {
 
@@ -146,9 +161,22 @@ var render = function() {
         bar_arr[i].getWorldPosition(tempV);
 
         tempV.project(camera);
+        raycaster.setFromCamera(tempV, camera);
+
+        var intersected_obj = raycaster.intersectObjects(scene.children);
+        var visibile = intersected_obj.length && bar_arr[i] === intersected_obj[0].object;
 
         var label_x = (tempV.x * .5 + .5) * document.getElementsByTagName("canvas")[0].clientWidth;
         var label_y = (tempV.y * -.5 + .5) * document.getElementsByTagName("canvas")[0].clientHeight;
+
+        if (!visibile || Math.abs(tempV.z) > 1) {
+
+            label_arr[i].style.display = "none";
+        
+        } else {
+
+            label_arr[i].style.display = "";
+        }
                 
         label_arr[i].style.transform = `translate(-50%, -50%) translate(${label_x}px,${label_y}px)`;
     }
@@ -162,9 +190,9 @@ var animate = function() {
 
     var timer = Date.now() * 0.0003;
 
-    camera.position.x = (Math.cos( timer ) *  1800);
-    camera.position.z = (Math.sin( timer ) *  1800);
-    camera.lookAt( scene.position );
+    // camera.position.x = (Math.cos( timer ) *  1800);
+    // camera.position.z = (Math.sin( timer ) *  1800);
+    camera.lookAt(scene.position);
 
     light.position = camera.position;
     light.lookAt(scene.position);
