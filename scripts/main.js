@@ -89,11 +89,31 @@ function getCountryData(e) {
 
         var country_data = JSON.parse(this.responseText);
         console.log(country_data);
+
+        document.getElementById("country-title").innerHTML = country_data.country;
+        document.getElementById("active-cases").innerHTML = "ACTIVE CASES: " + country_data.active;
+        document.getElementById("total-cases").innerHTML = "TOTAL CASES: " + country_data.cases;
+        document.getElementById("total-deaths").innerHTML = "TOTAL DEATHS: " + country_data.deaths;
+        document.getElementById("today-cases").innerHTML = "TODAY'S CASES: " + country_data.todayCases;
+        document.getElementById("today-deaths").innerHTML = "TODAY'S DEATHS: " + country_data.todayDeaths;
+        document.getElementById("today-recovered").innerHTML = "TODAY'S RECOVERED: " + country_data.todayRecovered;
     }
 
     xhttp_country.send();
 
     this.style.color = "#39FF14";
+    $("#country-details").stop().animate({left: "0px"}, 800);
+
+    if (this.style.color == "#39FF14") {
+
+        for (var i = 0; i < label_arr.length; i++) {
+
+            if (label_arr[i].style.color != "#ffffff") {
+    
+                label_arr[i].style.color = "#ffffff";
+            }
+        }
+    }
 }
 
 //WEBGL RENDERS
@@ -105,7 +125,7 @@ function init() {
     camera.position.set(X_POS, Y_POS, 10);
     camera.lookAt(new THREE.Vector3(0, 0 ,0));
 
-    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer = new THREE.WebGLRenderer({antialias: false});
     renderer.shadowMap.emabled = true;
     renderer.setSize(window.innerWidth, window.innerHeight);
 

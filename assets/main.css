@@ -1,6 +1,8 @@
 body, html {
     margin: 0;
     padding: 0;
+    overflow-x: hidden;
+    overflow-y: hidden;
 }
 
 #world-label-container > p {
@@ -9,4 +11,24 @@ body, html {
     color: #fff;
     font-size: x-small;
     font-family: Helvetica, sans-serif;
+}
+
+#country-details {
+    position: absolute;
+    top: 0;
+    left: -350px;
+    height: 100%;
+    width: 300px;
+    padding-top: 50px;
+    padding-left: 50px;
+    background-color: #333;
+    opacity: 0.8;
+    backdrop-filter: blur(10px);
+    color: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+#country-details h3 {
+    font-weight: lighter;
+    font-size: small;
 }
