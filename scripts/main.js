@@ -18,14 +18,16 @@ var phi, theta;
 var X, Y, Z, pos_x, pos_y, pos_z;
 var tempV, raycaster, label, label_arr = [];
 
+var xhttp_master, xhttp_country;
+
 //GET DATA
 function load_data() {
 
-    var xhttp = new XMLHttpRequest();
+    var xhttp_master = new XMLHttpRequest();
 
-    xhttp.open("GET", "https://corona.lmao.ninja/v2/countries?sort=country");
+    xhttp_master.open("GET", "https://corona.lmao.ninja/v2/countries?sort=country");
 
-    xhttp.onload = function() {
+    xhttp_master.onload = function() {
 
         data = JSON.parse(this.responseText);
 
@@ -62,30 +64,37 @@ function load_data() {
             label_arr.push(label);
             document.getElementById("world-label-container").appendChild(label);
 
-            //event listener for labels
-            label_arr[i].addEventListener("mousedown", function(e) {
-
-                var country_name = this.innerHTML;
-
-                data.forEach((country) => {
-
-                    console.log(country_name);
-
-                    if (country_name == country.country) {
-
-                        console.log(data.todayCases);
-                    }
-                });
-            });
-
             scene.add(bar);
+
+            for (var i = 0; i < label_arr.length; i++) {
+
+                label_arr[i].addEventListener("mousedown", getCountryData, false);
+            }
         }
     }
 
-    xhttp.send();
+    xhttp_master.send();
 }
 
 load_data();
+
+function getCountryData(e) {
+
+    var country_name = this.innerHTML;
+
+    xhttp_country = new XMLHttpRequest();
+    xhttp_country.open("GET", `https://corona.lmao.ninja/v2/countries/${country_name}?yesterday=true&strict=true&query`);
+
+    xhttp_country.onload = function() {
+
+        var country_data = JSON.parse(this.responseText);
+        console.log(country_data);
+    }
+
+    xhttp_country.send();
+
+    this.style.color = "#39FF14";
+}
 
 //WEBGL RENDERS
 function init() {
@@ -113,7 +122,7 @@ function init() {
         camera.updateProjectionMatrix();
     });
 
-    light = new THREE.AmbientLight(0xffffff, 2, 500); //night time: 0x3333ee day time: 0xffffff
+    light = new THREE.AmbientLight(0x3333ee, 2, 500); //night time: 0x3333ee day time: 0xffffff
     scene.add(light);
 
     var controls = new THREE.OrbitControls(camera, renderer.domElement);
