@@ -64,12 +64,12 @@ function load_data() {
             label_arr.push(label);
             document.getElementById("world-label-container").appendChild(label);
 
-            scene.add(bar);
-
             for (var i = 0; i < label_arr.length; i++) {
 
                 label_arr[i].addEventListener("mousedown", getCountryData, false);
             }
+            
+            scene.add(bar);
         }
     }
 
@@ -88,7 +88,6 @@ function getCountryData(e) {
     xhttp_country.onload = function() {
 
         var country_data = JSON.parse(this.responseText);
-        console.log(country_data);
 
         document.getElementById("country-title").innerHTML = country_data.country;
         document.getElementById("active-cases").innerHTML = "ACTIVE CASES: " + country_data.active;
@@ -117,6 +116,8 @@ function getCountryData(e) {
 }
 
 //WEBGL RENDERS
+init();
+
 function init() {
 
     scene = new THREE.Scene();
@@ -126,7 +127,6 @@ function init() {
     camera.lookAt(new THREE.Vector3(0, 0 ,0));
 
     renderer = new THREE.WebGLRenderer({antialias: false});
-    renderer.shadowMap.emabled = true;
     renderer.setSize(window.innerWidth, window.innerHeight);
 
     document.getElementById("canvas-container").appendChild(renderer.domElement);
@@ -182,7 +182,9 @@ function init() {
 tempV = new THREE.Vector3();
 raycaster = new THREE.Raycaster();
 
-var render = function() {
+var intersected_obj, visible, label_x, label_y;
+
+function labelMatrix() {
 
     for (var i = 0; i < bar_arr.length; i++) {
 
@@ -192,11 +194,11 @@ var render = function() {
         tempV.project(camera);
         raycaster.setFromCamera(tempV, camera);
 
-        var intersected_obj = raycaster.intersectObjects(scene.children);
-        var visibile = intersected_obj.length && bar_arr[i] === intersected_obj[0].object;
+        intersected_obj = raycaster.intersectObjects(scene.children);
+        visibile = intersected_obj.length && bar_arr[i] === intersected_obj[0].object;
 
-        var label_x = (tempV.x * .5 + .5) * document.getElementsByTagName("canvas")[0].clientWidth;
-        var label_y = (tempV.y * -.5 + .5) * document.getElementsByTagName("canvas")[0].clientHeight;
+        label_x = (tempV.x * .5 + .5) * document.getElementsByTagName("canvas")[0].clientWidth;
+        label_y = (tempV.y * -.5 + .5) * document.getElementsByTagName("canvas")[0].clientHeight;
 
         if (!visibile || Math.abs(tempV.z) > 1) {
 
@@ -209,13 +211,16 @@ var render = function() {
                 
         label_arr[i].style.transform = `translate(-50%, -50%) translate(${label_x}px,${label_y}px)`;
     }
+}
+
+var render = function() {
+
+    labelMatrix();
 
     renderer.render(scene, camera);
 };
 
 var animate = function() {
-
-    requestAnimationFrame(animate);
 
     var timer = Date.now() * 0.0003;
 
@@ -232,8 +237,13 @@ var animate = function() {
         star_arr[i].rotation.x += 0.02;
     }
 
+    setTimeout(function() {
+
+        requestAnimationFrame(animate);
+
+    }, 1000 / 144);
+
     render();
 }
 
-init();
 animate();
